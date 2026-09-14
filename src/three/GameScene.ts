@@ -278,8 +278,7 @@ export class GameScene {
         const startX = targetX + 2.5;
         const startZ = targetZ - 1.2;
         controller.group.position.set(startX, 0.0, startZ);
-        // Face the player / camera
-        controller.group.rotation.y = Math.PI;
+       
 
         this.customerContainer.add(controller.group);
         this.humanCustomers.set(order.id, {
