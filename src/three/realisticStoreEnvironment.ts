@@ -333,107 +333,54 @@ export function createRealisticServiceCounter(): THREE.Group {
   counterGroup.name = 'service_counter';
 
   const width = 8.4;
-  const depth = 1.7;
+  const depth = 1.6;
   const height = 0.95;
 
-  const bodyMat = new THREE.MeshStandardMaterial({ color: 0xFFE4F0, roughness: 0.45 });
-  const accentMat = new THREE.MeshStandardMaterial({ color: 0xFBCFE8, roughness: 0.4 });
-  const creamMat = new THREE.MeshStandardMaterial({ color: 0xFFFBEB, roughness: 0.5 });
-  const goldMat = new THREE.MeshStandardMaterial({ color: 0xFBBF24, metalness: 0.75, roughness: 0.22 });
+  // Counter Base Body
+  const baseGeom = new THREE.BoxGeometry(width, height, depth);
+  const baseMat = new THREE.MeshStandardMaterial({
+    color: 0xCCFBF1,
+    roughness: 0.4,
+  });
+  const base = new THREE.Mesh(baseGeom, baseMat);
+  base.position.set(0, height / 2, 0);
+  base.castShadow = true;
+  base.receiveShadow = true;
+  counterGroup.add(base);
 
-  const centerGeom = new THREE.BoxGeometry(width - 1.2, height, depth);
-  const centerMesh = new THREE.Mesh(centerGeom, bodyMat);
-  centerMesh.position.set(0, height / 2, 0);
-  centerMesh.castShadow = true;
-  centerMesh.receiveShadow = true;
-  counterGroup.add(centerMesh);
-
-  const leftCap = new THREE.Mesh(
-    new THREE.CylinderGeometry(depth / 2, depth / 2, height, 20, 1, false, Math.PI * 0.5, Math.PI),
-    bodyMat
-  );
-  leftCap.position.set(-(width - 1.2) / 2, height / 2, 0);
-  leftCap.castShadow = true;
-  counterGroup.add(leftCap);
-
-  const rightCap = new THREE.Mesh(
-    new THREE.CylinderGeometry(depth / 2, depth / 2, height, 20, 1, false, Math.PI * 1.5, Math.PI),
-    bodyMat
-  );
-  rightCap.position.set((width - 1.2) / 2, height / 2, 0);
-  rightCap.castShadow = true;
-  counterGroup.add(rightCap);
-
-  const scallopCount = 18;
-  const scallopRadius = 0.14;
-  for (let i = 0; i < scallopCount; i++) {
-    const sx = -width / 2 + 0.4 + (i * (width - 0.8)) / (scallopCount - 1);
-    const scallop = new THREE.Mesh(
-      new THREE.SphereGeometry(scallopRadius, 12, 10, 0, Math.PI * 2, 0, Math.PI / 2),
-      accentMat
+  // Front Paneling Details
+  const panelCount = 7;
+  const panelW = (width - 0.8) / panelCount;
+  for (let p = 0; p < panelCount; p++) {
+    const px = -width / 2 + 0.5 + p * panelW + panelW / 2;
+    const panel = new THREE.Mesh(
+      new THREE.BoxGeometry(panelW * 0.86, height * 0.72, 0.05),
+      new THREE.MeshStandardMaterial({ color: p % 2 === 0 ? 0xFCE7F3 : 0xFFFBEB, roughness: 0.3 })
     );
-    scallop.position.set(sx, 0.02, depth / 2 - 0.02);
-    scallop.rotation.x = -Math.PI / 2;
-    counterGroup.add(scallop);
+    panel.position.set(px, height / 2, depth / 2 + 0.025);
+    counterGroup.add(panel);
   }
 
-  const stripe = new THREE.Mesh(new THREE.BoxGeometry(width - 0.6, 0.06, 0.04), creamMat);
-  stripe.position.set(0, 0.32, depth / 2 + 0.01);
-  counterGroup.add(stripe);
-
+  // Polished Maple Countertop
   const woodTex = createPolishedWoodTexture();
   woodTex.repeat.set(4, 1);
-  const topMat = new THREE.MeshStandardMaterial({ map: woodTex, roughness: 0.22, metalness: 0.05 });
-
-  const topGeom = new THREE.BoxGeometry(width - 0.4, 0.10, depth - 0.2);
+  const topGeom = new THREE.BoxGeometry(width + 0.3, 0.12, depth + 0.25);
+  const topMat = new THREE.MeshStandardMaterial({
+    map: woodTex,
+    roughness: 0.25,
+    metalness: 0.05,
+  });
   const topMesh = new THREE.Mesh(topGeom, topMat);
-  topMesh.position.set(0, height + 0.05, 0);
+  topMesh.position.set(0, height + 0.06, 0);
   topMesh.receiveShadow = true;
   counterGroup.add(topMesh);
 
-  const lipRadius = (depth - 0.2) / 2;
-  const frontLip = new THREE.Mesh(
-    new THREE.CylinderGeometry(lipRadius, lipRadius, width - 0.4, 20, 1, false, 0, Math.PI),
-    topMat
-  );
-  frontLip.rotation.z = Math.PI / 2;
-  frontLip.position.set(0, height + 0.05, 0);
-  counterGroup.add(frontLip);
-
-  const trimGeom = new THREE.BoxGeometry(width - 0.36, 0.04, 0.06);
-  const trim = new THREE.Mesh(trimGeom, goldMat);
-  trim.position.set(0, height + 0.01, (depth - 0.2) / 2 + 0.02);
+  // Beveled Edge Bullnose Trim
+  const trimGeom = new THREE.BoxGeometry(width + 0.34, 0.05, depth + 0.29);
+  const trimMat = new THREE.MeshStandardMaterial({ color: 0xF59E0B, roughness: 0.3 });
+  const trim = new THREE.Mesh(trimGeom, trimMat);
+  trim.position.set(0, height + 0.03, 0);
   counterGroup.add(trim);
-
-  const glassMat = new THREE.MeshPhysicalMaterial({
-    color: 0xFFFFFF,
-    transparent: true,
-    opacity: 0.22,
-    transmission: 0.9,
-    roughness: 0.05,
-    side: THREE.DoubleSide,
-  });
-  const sneezeGlass = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.5, 0.05), glassMat);
-  sneezeGlass.position.set(1.5, height + 0.45, -0.5);
-  counterGroup.add(sneezeGlass);
-
-  [-1.2, 1.2].forEach(bx => {
-    const bracket = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.5, 10), goldMat);
-    bracket.position.set(1.5 + bx, height + 0.45, -0.5);
-    counterGroup.add(bracket);
-  });
-
-  const drawerMat = new THREE.MeshStandardMaterial({ color: 0xFDF2F8, roughness: 0.4 });
-  for (let d = 0; d < 3; d++) {
-    const drawer = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.22, 0.03), drawerMat);
-    drawer.position.set(3.0, 0.25 + d * 0.28, depth / 2 + 0.005);
-    counterGroup.add(drawer);
-
-    const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.5, 8), goldMat);
-    handle.rotation.z = Math.PI / 2;
-    handle.position.set(3.0, 0.25 + d * 0.28, depth / 2 + 0.03);
-    counterGroup.add(handle);
-  }
 
   return counterGroup;
 }

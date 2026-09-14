@@ -4,7 +4,6 @@ import { BuiltItem, ContainerType, FlavorId, GameStats, IceCreamOrder, ScoreBrea
 import { evaluateOrder, generateOrder } from './game/orderManager';
 import { GameScene } from './three/GameScene';
 import { sounds } from './audio/soundManager';
-import { CustomerOrderTickets } from './components/CustomerOrderTickets';
 import { PreparationStation } from './components/PreparationStation';
 import { GameHUD } from './components/GameHUD';
 import { DaySummaryModal } from './components/DaySummaryModal';
