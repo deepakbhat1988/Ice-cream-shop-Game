@@ -118,7 +118,7 @@ export class GameScene {
     this.scene.add(this.orderPreviewContainer);
 
     this.activeItemRoot = new THREE.Group();
-    this.activeItemRoot.position.set(0, 1.03, 0.05);
+    this.activeItemRoot.position.set(0, 1.03, -0.5);
     this.scene.add(this.activeItemRoot);
 
     this.particleGroup = new THREE.Group();
