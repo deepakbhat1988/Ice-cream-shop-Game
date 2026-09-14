@@ -674,18 +674,44 @@ export function createPanoramicHillLandscape(): PanoramicHillController {
 
   // Animation controller
   const controller: PanoramicHillController = {
+     const controller: PanoramicHillController = {
     group: root,
     update: (delta: number, elapsedTime: number) => {
-      // Smoothly rotate the windmill blades with realistic momentum
-      rotorHub.rotation.z += delta * 1.15;      // ⬅ YOU WANT TO INSERT JUST ABOVE THIS LINE
+      // Drive the cars along the road
+      carMeshes.forEach(({ group, spec }) => {
+        spec.offset += spec.speed * delta * spec.direction;
+        if (spec.offset > 1.1) spec.offset = -0.1;
+        if (spec.offset < -0.1) spec.offset = 1.1;
 
-             // Cloud drift
-        cloudMeshes.forEach((cloud, idx) => {
-          cloud.position.x += delta * (0.35 + idx * 0.08);
-          if (cloud.position.x > 38) {
-            cloud.position.x = -38;
-          }
-        });
+        const t = THREE.MathUtils.clamp(spec.offset, 0, 1);
+        const pt = roadPath.getPoint(t);
+        const tan = roadPath.getTangent(t).normalize();
+        const carGroundY = getTerrainHeight(pt.x, pt.z) - 0.05;
+
+        group.position.set(pt.x, carGroundY + 0.08, pt.z);
+        group.rotation.y = Math.atan2(tan.x, tan.z) + (spec.direction === -1 ? Math.PI : 0);
+      });
+
+      // Smoothly rotate the windmill blades with realistic momentum
+      rotorHub.rotation.z += delta * 1.15;
+
+      // Cloud drift
+      cloudMeshes.forEach((cloud, idx) => {
+        cloud.position.x += delta * (0.35 + idx * 0.08);
+        if (cloud.position.x > 38) {
+          cloud.position.x = -38;
+        }
+      });
+
+      // Hot air balloon gentle float & sway
+      balloonGroup.position.x += delta * 0.15;
+      balloonGroup.position.y = 14 + Math.sin(elapsedTime * 0.5) * 0.4;
+      balloonGroup.rotation.z = Math.sin(elapsedTime * 0.8) * 0.04;
+      if (balloonGroup.position.x > 32) {
+        balloonGroup.position.x = -32;
+      }
+    },
+  };
 
   return controller;
 }
