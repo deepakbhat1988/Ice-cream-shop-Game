@@ -679,16 +679,13 @@ export function createPanoramicHillLandscape(): PanoramicHillController {
       // Smoothly rotate the windmill blades with realistic momentum
       rotorHub.rotation.z += delta * 1.15;      // ⬅ YOU WANT TO INSERT JUST ABOVE THIS LINE
 
-      // Cloud drift
-      cloudMeshes.forEach((cloud, idx) => {
-        ...
-      });
-
-      // Hot air balloon gentle float & sway
-      balloonGroup.position.x += delta * 0.15;
-      ...
-    },
-  };
+             // Cloud drift
+        cloudMeshes.forEach((cloud, idx) => {
+          cloud.position.x += delta * (0.35 + idx * 0.08);
+          if (cloud.position.x > 38) {
+            cloud.position.x = -38;
+          }
+        });
 
   return controller;
 }
