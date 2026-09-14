@@ -297,13 +297,7 @@ export default function App() {
       <CameraControls currentView={cameraView} onChangeView={handleCameraChange} />
 
       {/* Slim patience chip overlay — the actual order is shown in 3D above the customer */}
-      {stats.isShiftActive && !stats.isDayComplete && (
-        <CustomerOrderTickets
-          queue={customerQueue}
-          activeOrderIndex={activeOrderIndex}
-          onSelectOrder={setActiveOrderIndex}
-        />
-      )}
+    
 
       <ServingFeedback score={servingScore} onClear={() => setServingScore(null)} />
 
