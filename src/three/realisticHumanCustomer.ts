@@ -26,7 +26,7 @@ export interface RealisticHumanController {
 }
 
 // ------------------------------------------------------------------
-// 1. Procedural High-Res Realistic Human Skin & Face Canvas Texture
+// 1. Procedural Face Texture
 // ------------------------------------------------------------------
 function createRealisticFaceTexture(
   skinToneHex: string,
@@ -629,9 +629,10 @@ function createRealisticHair(
       hairGroup.add(sweep);
     }
   } else {
+    // twin_tails
     [-1, 1].forEach(side => {
       const tie = new THREE.Mesh(
-        new THREE.TorusGeometry(0.042,        0.014, 8, 16),
+        new THREE.TorusGeometry(0.042, 0.014, 8, 16),
         new THREE.MeshStandardMaterial({ color: 0xF43F5E, roughness: 0.3 })
       );
       tie.position.set(side * 0.24, 0.12, -0.10);
@@ -859,9 +860,7 @@ function createRealisticAccessory(
   }
 
   headGroup.add(accGroup);
-}
-
-// ------------------------------------------------------------------
+}// ------------------------------------------------------------------
 // 7. Core Human Customer Generator
 // ------------------------------------------------------------------
 export function createRealisticHumanCustomer(appearance: CustomerAppearance): RealisticHumanController {
@@ -1040,7 +1039,7 @@ export function createRealisticHumanCustomer(appearance: CustomerAppearance): Re
   chest.castShadow = true;
   chestGroup.add(chest);
 
-  // WIDER trapezius shoulders
+  // Wider trapezius shoulders
   [-1, 1].forEach(side => {
     const trapGeom = new THREE.CylinderGeometry(0.10, 0.17 * shoulderScale, 0.22, 12);
     trapGeom.scale(1, 1, 0.7 * torsoScaleZ);
@@ -1298,7 +1297,6 @@ export function createRealisticHumanCustomer(appearance: CustomerAppearance): Re
     noseGroup.add(nostril);
   });
   headGroup.add(noseGroup);
-
   const mouthGroup = new THREE.Group();
   mouthGroup.position.set(0, -0.108, 0.198);
 
@@ -1309,4 +1307,144 @@ export function createRealisticHumanCustomer(appearance: CustomerAppearance): Re
   });
 
   const upperLipGeom = new THREE.CylinderGeometry(0.013, 0.013, 0.072, 14);
-  const upperLip = new THREE.Mesh(upperLipGeom,
+  const upperLip = new THREE.Mesh(upperLipGeom, lipMat);
+  upperLip.rotation.z = Math.PI / 2;
+  upperLip.position.set(0, 0.01, 0);
+  mouthGroup.add(upperLip);
+
+  const lowerLipGeom = new THREE.SphereGeometry(0.020, 14, 14);
+  lowerLipGeom.scale(1.7, 0.85, 0.7);
+  const lowerLip = new THREE.Mesh(lowerLipGeom, lipMat);
+  lowerLip.position.set(0, -0.011, 0.004);
+  mouthGroup.add(lowerLip);
+
+  headGroup.add(mouthGroup);
+
+  // ---- EYES ----
+  const irisTex = createRealisticIrisTexture(appearance.eyeColor);
+  const scleraMat = new THREE.MeshStandardMaterial({
+    color: 0xF8FAFC,
+    roughness: 0.1,
+  });
+  const irisMat = new THREE.MeshStandardMaterial({
+    map: irisTex,
+    roughness: 0.05,
+    metalness: 0.05,
+  });
+  const corneaMat = new THREE.MeshPhysicalMaterial({
+    color: 0xFFFFFF,
+    transparent: true,
+    opacity: 0.35,
+    roughness: 0.02,
+    transmission: 0.9,
+    reflectivity: 0.95,
+  });
+
+  const createRealisticEye = (isLeft: boolean): { eyeAssembly: THREE.Group; eyelid: THREE.Mesh } => {
+    const eyeAssembly = new THREE.Group();
+    const side = isLeft ? -1 : 1;
+    eyeAssembly.position.set(side * 0.084, 0.034, 0.182);
+    eyeAssembly.rotation.y = side * 0.10;
+
+    const eyeball = new THREE.Mesh(new THREE.SphereGeometry(0.036, 22, 20), scleraMat);
+    eyeAssembly.add(eyeball);
+
+    const irisGeom = new THREE.CircleGeometry(0.018, 26);
+    const iris = new THREE.Mesh(irisGeom, irisMat);
+    iris.position.set(0, 0, 0.035);
+    eyeAssembly.add(iris);
+
+    const corneaGeom = new THREE.SphereGeometry(0.023, 18, 18, 0, Math.PI * 2, 0, Math.PI * 0.5);
+    const cornea = new THREE.Mesh(corneaGeom, corneaMat);
+    cornea.position.set(0, 0, 0.027);
+    eyeAssembly.add(cornea);
+
+    const lashGeom = new THREE.TorusGeometry(0.036, 0.0035, 6, 16, Math.PI * 0.85);
+    const lashMat = new THREE.MeshBasicMaterial({ color: 0x090D16 });
+    const lash = new THREE.Mesh(lashGeom, lashMat);
+    lash.position.set(0, 0.015, 0.028);
+    lash.rotation.z = side * 0.08;
+    eyeAssembly.add(lash);
+
+    const eyelidGeom = new THREE.SphereGeometry(0.039, 22, 18, 0, Math.PI * 2, 0, Math.PI * 0.52);
+    const eyelid = new THREE.Mesh(eyelidGeom, skinMat);
+    eyelid.position.set(0, 0.004, 0);
+    eyelid.rotation.x = -Math.PI * 0.55;
+    eyeAssembly.add(eyelid);
+
+    return { eyeAssembly, eyelid };
+  };
+
+  const leftEye = createRealisticEye(true);
+  const rightEye = createRealisticEye(false);
+  headGroup.add(leftEye.eyeAssembly, rightEye.eyeAssembly);
+
+  createRealisticHair(appearance.hairStyle, hairMat, headGroup);
+  createRealisticAccessory(appearance.accessory, headGroup);
+
+  root.add(headGroup);
+
+  // ---- ANIMATION CONTROLLER ----
+  const controller: RealisticHumanController = {
+    group: root,
+    headGroup,
+    chestGroup,
+    leftEyeLid: leftEye.eyelid,
+    rightEyeLid: rightEye.eyelid,
+    leftArm,
+    rightArm,
+    blinkTimer: 0,
+    nextBlinkTime: 2.2 + Math.random() * 2.8,
+    isBlinking: false,
+    happyTimer: 0,
+
+    triggerHappy: () => {
+      controller.happyTimer = 2.0;
+    },
+
+    update: (delta: number, elapsedTime: number) => {
+      const breath = Math.sin(elapsedTime * 2.1) * 0.014;
+      chestGroup.scale.set(1 + breath * 0.4, 1 + breath, 1 + breath * 0.4);
+      headGroup.position.y = 1.90 * heightFactor + breath * 0.3;
+
+      const idleYaw = Math.sin(elapsedTime * 0.75) * 0.035;
+      const idlePitch = Math.cos(elapsedTime * 1.05) * 0.022;
+      headGroup.rotation.y = idleYaw;
+      headGroup.rotation.x = idlePitch + 0.05;
+
+      controller.blinkTimer += delta;
+      if (!controller.isBlinking && controller.blinkTimer >= controller.nextBlinkTime) {
+        controller.isBlinking = true;
+        controller.blinkTimer = 0;
+      }
+
+      if (controller.isBlinking) {
+        const blinkProgress = controller.blinkTimer / 0.15;
+        if (blinkProgress >= 1.0) {
+          controller.isBlinking = false;
+          controller.blinkTimer = 0;
+          controller.nextBlinkTime = 2.0 + Math.random() * 3.5;
+          controller.leftEyeLid.rotation.x = -Math.PI * 0.55;
+          controller.rightEyeLid.rotation.x = -Math.PI * 0.55;
+        } else {
+          const eyelidAngle = -Math.PI * 0.55 + Math.sin(blinkProgress * Math.PI) * 0.56;
+          controller.leftEyeLid.rotation.x = eyelidAngle;
+          controller.rightEyeLid.rotation.x = eyelidAngle;
+        }
+      }
+
+      if (controller.happyTimer > 0) {
+        controller.happyTimer -= delta;
+        const waveAngle = Math.sin(elapsedTime * 12) * 0.32;
+        controller.rightArm.rotation.z = -0.65 + waveAngle;
+        controller.rightArm.rotation.x = 0.55;
+        headGroup.rotation.x = Math.sin(elapsedTime * 9) * 0.07 + 0.05;
+      } else {
+        controller.rightArm.rotation.z = 0;
+        controller.rightArm.rotation.x = 0;
+      }
+    },
+  };
+
+  return controller;
+}
