@@ -1,0 +1,6 @@
+{
+  "name": "Saanvi Ice Cream Shop 3D",
+  "description": "A 3D ice cream parlor game with realistic human customers, zoomed-out 3D camera controls, and full counter stations for cones, sundaes, and shakes.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
