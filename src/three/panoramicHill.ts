@@ -482,6 +482,130 @@ export function createPanoramicHillLandscape(): PanoramicHillController {
     root.add(snowCap);
   });
 
+  // 8.5. Scenic Road with Driving Vehicles
+  const roadGroup = new THREE.Group();
+  roadGroup.name = 'scenic_road';
+
+  const roadPath = new THREE.CatmullRomCurve3([
+    new THREE.Vector3(-40, 0, -8),
+    new THREE.Vector3(-20, 0, -8.3),
+    new THREE.Vector3(0, 0, -8.6),
+    new THREE.Vector3(20, 0, -8.9),
+    new THREE.Vector3(40, 0, -9.2),
+    new THREE.Vector3(60, 0, -9.5),
+  ]);
+
+  const roadWidth = 2.4;
+  const roadSegments = 80;
+  const roadPositions: number[] = [];
+  const roadIndices: number[] = [];
+
+  for (let i = 0; i <= roadSegments; i++) {
+    const t = i / roadSegments;
+    const pt = roadPath.getPoint(t);
+    const tan = roadPath.getTangent(t).normalize();
+
+    const perpX = -tan.z;
+    const perpZ = tan.x;
+
+    const roadGroundY = getTerrainHeight(pt.x, pt.z) - 0.05;
+
+    roadPositions.push(
+      pt.x + perpX * roadWidth / 2, roadGroundY + 0.03, pt.z + perpZ * roadWidth / 2,
+      pt.x - perpX * roadWidth / 2, roadGroundY + 0.03, pt.z - perpZ * roadWidth / 2
+    );
+
+    if (i < roadSegments) {
+      const a = i * 2;
+      const b = i * 2 + 1;
+      const c = (i + 1) * 2;
+      const d = (i + 1) * 2 + 1;
+      roadIndices.push(a, b, c, b, d, c);
+    }
+  }
+
+  const roadGeom = new THREE.BufferGeometry();
+  roadGeom.setAttribute('position', new THREE.Float32BufferAttribute(roadPositions, 3));
+  roadGeom.setIndex(roadIndices);
+  roadGeom.computeVertexNormals();
+
+  const roadMat = new THREE.MeshStandardMaterial({
+    color: 0x374151,
+    roughness: 0.9,
+    metalness: 0.02,
+    side: THREE.DoubleSide,
+  });
+  const roadMesh = new THREE.Mesh(roadGeom, roadMat);
+  roadMesh.receiveShadow = true;
+  roadGroup.add(roadMesh);
+
+  const lineMat = new THREE.MeshBasicMaterial({ color: 0xFBBF24 });
+  for (let d = 0; d < 60; d++) {
+    const t = d / 60;
+    const pt = roadPath.getPoint(t);
+    const tan = roadPath.getTangent(t).normalize();
+    const dashGroundY = getTerrainHeight(pt.x, pt.z) - 0.05;
+    const dash = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.02, 0.14), lineMat);
+    dash.position.set(pt.x, dashGroundY + 0.06, pt.z);
+    dash.rotation.y = Math.atan2(tan.x, tan.z);
+    roadGroup.add(dash);
+  }
+
+  type CarSpec = { color: number; offset: number; speed: number; direction: 1 | -1 };
+  const carSpecs: CarSpec[] = [
+    { color: 0xEF4444, offset: 0.05, speed: 0.030, direction: 1 },
+    { color: 0x3B82F6, offset: 0.30, speed: 0.025, direction: -1 },
+    { color: 0xFCD34D, offset: 0.55, speed: 0.028, direction: 1 },
+    { color: 0x10B981, offset: 0.80, speed: 0.022, direction: -1 },
+  ];
+
+  const carGroup = new THREE.Group();
+  const carMeshes: Array<{ group: THREE.Group; spec: CarSpec }> = [];
+
+  carSpecs.forEach(spec => {
+    const car = new THREE.Group();
+
+    const bodyMat = new THREE.MeshStandardMaterial({ color: spec.color, roughness: 0.4 });
+    const body = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.28, 0.5), bodyMat);
+    body.position.y = 0.22;
+    body.castShadow = true;
+    car.add(body);
+
+    const cabinMat = new THREE.MeshStandardMaterial({
+      color: 0xBAE6FD,
+      roughness: 0.15,
+      metalness: 0.3,
+    });
+    const cabin = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.22, 0.44), cabinMat);
+    cabin.position.set(-0.05, 0.42, 0);
+    car.add(cabin);
+
+    const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.9 });
+    const wheelGeom = new THREE.CylinderGeometry(0.12, 0.12, 0.1, 12);
+    [
+      [-0.35, 0.12, 0.28],
+      [0.35, 0.12, 0.28],
+      [-0.35, 0.12, -0.28],
+      [0.35, 0.12, -0.28],
+    ].forEach(([wx, wy, wz]) => {
+      const wheel = new THREE.Mesh(wheelGeom, wheelMat);
+      wheel.rotation.x = Math.PI / 2;
+      wheel.position.set(wx, wy, wz);
+      car.add(wheel);
+    });
+
+    const headlightMat = new THREE.MeshBasicMaterial({ color: 0xFEF08A });
+    const headlight = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 8), headlightMat);
+    headlight.position.set(0.55, 0.22, 0);
+    car.add(headlight);
+
+    carGroup.add(car);
+    carMeshes.push({ group: car, spec });
+  });
+
+  roadGroup.add(carGroup);
+  root.add(roadGroup);
+
   // 9. Clouds
   const cloudGroup = new THREE.Group();
   const cloudMat = new THREE.MeshStandardMaterial({
@@ -552,21 +676,17 @@ export function createPanoramicHillLandscape(): PanoramicHillController {
   const controller: PanoramicHillController = {
     group: root,
     update: (delta: number, elapsedTime: number) => {
-      rotorHub.rotation.z += delta * 1.15;
+      // Smoothly rotate the windmill blades with realistic momentum
+      rotorHub.rotation.z += delta * 1.15;      // ⬅ YOU WANT TO INSERT JUST ABOVE THIS LINE
 
+      // Cloud drift
       cloudMeshes.forEach((cloud, idx) => {
-        cloud.position.x += delta * (0.35 + idx * 0.08);
-        if (cloud.position.x > 38) {
-          cloud.position.x = -38;
-        }
+        ...
       });
 
+      // Hot air balloon gentle float & sway
       balloonGroup.position.x += delta * 0.15;
-      balloonGroup.position.y = 14 + Math.sin(elapsedTime * 0.5) * 0.4;
-      balloonGroup.rotation.z = Math.sin(elapsedTime * 0.8) * 0.04;
-      if (balloonGroup.position.x > 32) {
-        balloonGroup.position.x = -32;
-      }
+      ...
     },
   };
 
