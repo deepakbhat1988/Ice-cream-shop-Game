@@ -18,16 +18,9 @@ export default function App() {
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const gameSceneRef = useRef<GameScene | null>(null);
 
-  // Sound Mute state
   const [isMuted, setIsMuted] = useState<boolean>(() => sounds.getIsMuted());
-
-  // Help Modal
   const [showHelp, setShowHelp] = useState<boolean>(false);
-
-  // Active Score Toast
   const [servingScore, setServingScore] = useState<ScoreBreakdown | null>(null);
-
-  // Camera preset view ('parlor' by default for zoomed out 3D view)
   const [cameraView, setCameraView] = useState<'parlor' | 'counter' | 'customers'>('parlor');
 
   const handleCameraChange = (view: 'parlor' | 'counter' | 'customers') => {
@@ -35,7 +28,6 @@ export default function App() {
     gameSceneRef.current?.setCameraPreset(view);
   };
 
-  // Initial built item default
   const defaultBuiltItem: BuiltItem = {
     container: 'waffle_cone',
     scoops: [],
@@ -45,12 +37,10 @@ export default function App() {
 
   const [builtItem, setBuiltItem] = useState<BuiltItem>(defaultBuiltItem);
 
-  // Customer Queue (3 at counter bays + queue line)
   const [customerQueue, setCustomerQueue] = useState<IceCreamOrder[]>([]);
   const [activeOrderIndex, setActiveOrderIndex] = useState<number>(0);
   const customerCounterRef = useRef<number>(0);
 
-  // Game Stats
   const [stats, setStats] = useState<GameStats>({
     day: 1,
     score: 0,
@@ -79,7 +69,7 @@ export default function App() {
     };
   }, []);
 
-  // Update 3D Scene Callbacks dynamically so they always have current state & handlers
+  // Update 3D Scene Callbacks
   useEffect(() => {
     if (!gameSceneRef.current) return;
     gameSceneRef.current.callbacks = {
@@ -132,24 +122,23 @@ export default function App() {
     };
   });
 
-  // Sync 3D Scene with Customer Queue
+  // Sync 3D Scene with Customer Queue — customers + 3D order previews
   useEffect(() => {
     if (gameSceneRef.current) {
       gameSceneRef.current.updateCustomers(customerQueue);
+      gameSceneRef.current.updateOrderPreviews(customerQueue);
     }
   }, [customerQueue]);
 
-  // Sync 3D Scene with Active Built Item on the Tray
+  // Sync 3D Scene with Built Item on the tray
   useEffect(() => {
     if (gameSceneRef.current) {
       gameSceneRef.current.updateBuiltItem(builtItem);
     }
   }, [builtItem]);
 
-  // Start / Reset Shift
   const startDayShift = (dayNum = 1) => {
     sounds.playPop(580);
-    // Generate initial queue of customers for 3 bays + buffer
     const initialQueue: IceCreamOrder[] = [];
     for (let i = 0; i < 5; i++) {
       initialQueue.push(generateOrder(dayNum, customerCounterRef.current++, i));
@@ -175,40 +164,29 @@ export default function App() {
     });
   };
 
-  // Main Shift Timer & Customer Patience Loop
   useEffect(() => {
     if (!stats.isShiftActive || stats.isDayComplete) return;
 
     const interval = setInterval(() => {
-      // 1. Decrement shift time
       setStats(prev => {
         const nextTime = prev.timeLeft - 1;
         if (nextTime <= 0) {
-          return {
-            ...prev,
-            timeLeft: 0,
-            isShiftActive: false,
-            isDayComplete: true,
-          };
+          return { ...prev, timeLeft: 0, isShiftActive: false, isDayComplete: true };
         }
         return { ...prev, timeLeft: nextTime };
       });
 
-      // 2. Decrement patience for the active customer at the counter (one customer at a time)
       setCustomerQueue(prevQueue => {
         if (prevQueue.length === 0) return prevQueue;
 
         let hadAngryCustomer = false;
         const updated = prevQueue.map((order, idx) => {
-          // Strictly the single active customer at the counter loses patience
           if (idx === 0) {
             const nextPatience = order.remainingPatienceSeconds - 1;
             const heartRatio = nextPatience / order.totalPatienceSeconds;
             const currentHearts = Math.max(0, Math.ceil(heartRatio * order.maxHearts));
 
-            if (nextPatience <= 0) {
-              hadAngryCustomer = true;
-            }
+            if (nextPatience <= 0) hadAngryCustomer = true;
 
             return {
               ...order,
@@ -221,13 +199,8 @@ export default function App() {
 
         if (hadAngryCustomer) {
           sounds.playAngrySigh();
-          setStats(s => ({
-            ...s,
-            combo: 0,
-            angryCustomers: s.angryCustomers + 1,
-          }));
+          setStats(s => ({ ...s, combo: 0, angryCustomers: s.angryCustomers + 1 }));
 
-          // Filter out expired customers and add fresh ones
           const active = updated.filter(o => o.remainingPatienceSeconds > 0);
           while (active.length < 5) {
             active.push(generateOrder(stats.day, customerCounterRef.current++, active.length));
@@ -242,7 +215,6 @@ export default function App() {
     return () => clearInterval(interval);
   }, [stats.isShiftActive, stats.isDayComplete, stats.day]);
 
-  // Handle Serving Current Built Item to Active Customer
   const handleServe = () => {
     if (customerQueue.length === 0) return;
 
@@ -255,11 +227,7 @@ export default function App() {
 
     if (evaluation.isPerfect) {
       sounds.playSuccessChime(true);
-      confetti({
-        particleCount: 45,
-        spread: 55,
-        origin: { y: 0.5 },
-      });
+      confetti({ particleCount: 45, spread: 55, origin: { y: 0.5 } });
       if (gameSceneRef.current) {
         gameSceneRef.current.spawnSparkleBurst(new THREE.Vector3(-0.25, 2.0, 0.35), 25, 0xFBBF24);
         gameSceneRef.current.triggerCustomerHappy(activeOrder.id);
@@ -274,7 +242,6 @@ export default function App() {
       sounds.playAngrySigh();
     }
 
-    // Update Stats
     const nextCombo = evaluation.accuracyScore >= 75 ? stats.combo + 1 : 0;
     setStats(prev => ({
       ...prev,
@@ -286,40 +253,30 @@ export default function App() {
       perfectOrders: prev.perfectOrders + (evaluation.isPerfect ? 1 : 0),
     }));
 
-    // Remove served customer and advance line
     setCustomerQueue(prev => {
       const filtered = prev.filter(o => o.id !== activeOrder.id);
       const newOrder = generateOrder(stats.day, customerCounterRef.current++, filtered.length);
       return [...filtered, newOrder];
     });
 
-    // Reset active order index safely
     setActiveOrderIndex(0);
-
-    // Reset tray for next order
     setBuiltItem(defaultBuiltItem);
   };
 
-  // Clear / Trash Current Item
   const handleClearTray = () => {
     sounds.playTrash();
     setBuiltItem(defaultBuiltItem);
   };
 
-  // Blend Milkshake on Banana Machine
   const handleBlendMilkshake = () => {
     if (!builtItem.milkshakeFlavor) return;
     sounds.playBlender();
     if (gameSceneRef.current) {
       gameSceneRef.current.triggerMilkshakeBlend(1.2);
     }
-    setBuiltItem(prev => ({
-      ...prev,
-      isBlended: true,
-    }));
+    setBuiltItem(prev => ({ ...prev, isBlended: true }));
   };
 
-  // Toggle Sound Mute
   const handleToggleSound = () => {
     const muted = sounds.toggleMute();
     setIsMuted(muted);
@@ -327,10 +284,8 @@ export default function App() {
 
   return (
     <div className="relative w-full h-screen overflow-hidden bg-sky-100 flex flex-col justify-between select-none">
-      {/* 3D WebGL Canvas Layer */}
       <div ref={canvasContainerRef} className="absolute inset-0 w-full h-full cursor-pointer z-0" />
 
-      {/* Top HUD: Shift Timer, Score, Coins, Audio, Recipe Book */}
       {stats.isShiftActive && (
         <GameHUD
           stats={stats}
@@ -340,13 +295,9 @@ export default function App() {
         />
       )}
 
-      {/* 3D Camera Preset View Controls & Drag Orbit Indicator */}
-      <CameraControls
-        currentView={cameraView}
-        onChangeView={handleCameraChange}
-      />
+      <CameraControls currentView={cameraView} onChangeView={handleCameraChange} />
 
-      {/* Vertical Customer Order Tickets (Floating above customer heads, NEVER on face!) */}
+      {/* Slim patience chip overlay — the actual order is shown in 3D above the customer */}
       {stats.isShiftActive && !stats.isDayComplete && (
         <CustomerOrderTickets
           queue={customerQueue}
@@ -355,13 +306,8 @@ export default function App() {
         />
       )}
 
-      {/* Serving Score Feedback Popup */}
-      <ServingFeedback
-        score={servingScore}
-        onClear={() => setServingScore(null)}
-      />
+      <ServingFeedback score={servingScore} onClear={() => setServingScore(null)} />
 
-      {/* Bottom Preparation Counter Station */}
       {stats.isShiftActive && !stats.isDayComplete && (
         <PreparationStation
           builtItem={builtItem}
@@ -372,7 +318,6 @@ export default function App() {
         />
       )}
 
-      {/* Welcome / Start Shift Screen (Shown before start) */}
       {!stats.isShiftActive && !stats.isDayComplete && (
         <div className="absolute inset-0 z-40 flex items-center justify-center p-4 bg-black/30 backdrop-blur-xs">
           <div className="bg-white/95 backdrop-blur-md rounded-3xl p-6 sm:p-8 max-w-sm w-full shadow-2xl border-4 border-pink-300 text-center flex flex-col items-center gap-4 animate-pop">
@@ -400,7 +345,7 @@ export default function App() {
               </div>
               <div className="flex items-center gap-2">
                 <span>🔔</span>
-                <span>Check customer tickets above & ring the bell to serve</span>
+                <span>Watch the 3D order above the customer & ring the bell to serve</span>
               </div>
             </div>
 
@@ -416,7 +361,6 @@ export default function App() {
         </div>
       )}
 
-      {/* Day End / Shift Complete Summary Modal */}
       {stats.isDayComplete && (
         <DaySummaryModal
           stats={stats}
@@ -425,10 +369,7 @@ export default function App() {
         />
       )}
 
-      {/* Recipe Help Handbook Modal */}
-      {showHelp && (
-        <RecipeHelpModal onClose={() => setShowHelp(false)} />
-      )}
+      {showHelp && <RecipeHelpModal onClose={() => setShowHelp(false)} />}
     </div>
   );
 }
