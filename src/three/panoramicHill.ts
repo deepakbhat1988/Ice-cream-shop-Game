@@ -673,7 +673,6 @@ export function createPanoramicHillLandscape(): PanoramicHillController {
   root.add(balloonGroup);
 
   // Animation controller
-  const controller: PanoramicHillController = {
      const controller: PanoramicHillController = {
     group: root,
     update: (delta: number, elapsedTime: number) => {
