@@ -393,19 +393,19 @@ export function createPanoramicHillLandscape(): PanoramicHillController {
   const oakMat2 = new THREE.MeshStandardMaterial({ color: 0x15803D, roughness: 0.7 });
   const trunkMat = new THREE.MeshStandardMaterial({ color: 0x78350F, roughness: 0.85 });
 
-  const treesData: Array<{ x: number; z: number; type: 'pine' | 'oak'; scale: number }> = [
-    { x: -5.0,  z: -14.2, type: 'oak',  scale: 1.3 },
-    { x: -2.2,  z: -15.5, type: 'pine', scale: 1.1 },
-    { x: 1.2,   z: -16.5, type: 'oak',  scale: 1.4 },
-    { x: 7.8,   z: -17.5, type: 'pine', scale: 1.4 },
-    { x: 12.5,  z: -18.2, type: 'oak',  scale: 1.6 },
-    { x: -16.5, z: -19.5, type: 'pine', scale: 1.9 },
-    { x: -19.0, z: -17.5, type: 'oak',  scale: 1.5 },
-    { x: 19.5,  z: -19.2, type: 'pine', scale: 1.7 },
-    { x: -8.5,  z: -12.5, type: 'oak',  scale: 1.0 },
-    { x: 6.5,   z: -13.2, type: 'oak',  scale: 1.15 },
-    { x: 10.0,  z: -14.8, type: 'pine', scale: 1.25 },
-    { x: -14.0, z: -18.0, type: 'oak',  scale: 1.4 },
+    const treesData: Array<{ x: number; z: number; type: 'pine' | 'oak'; scale: number }> = [
+    { x: -6.0,  z: -8.5,  type: 'oak',  scale: 1.4 },
+    { x: -3.5,  z: -9.5,  type: 'pine', scale: 1.3 },
+    { x: 3.5,   z: -9.8,  type: 'oak',  scale: 1.5 },
+    { x: 8.0,   z: -10.2, type: 'pine', scale: 1.5 },
+    { x: 13.0,  z: -11.0, type: 'oak',  scale: 1.7 },
+    { x: -13.0, z: -11.5, type: 'pine', scale: 1.8 },
+    { x: -17.0, z: -10.5, type: 'oak',  scale: 1.6 },
+    { x: 18.5,  z: -11.8, type: 'pine', scale: 1.7 },
+    { x: -9.5,  z: -7.5,  type: 'oak',  scale: 1.2 },
+    { x: 5.5,   z: -8.0,  type: 'oak',  scale: 1.25 },
+    { x: 10.5,  z: -9.2,  type: 'pine', scale: 1.35 },
+    { x: -15.0, z: -9.0,  type: 'oak',  scale: 1.5 },
   ];
 
   treesData.forEach(td => {
@@ -461,13 +461,13 @@ export function createPanoramicHillLandscape(): PanoramicHillController {
   const distantMtnMat1 = new THREE.MeshStandardMaterial({ color: 0x64748B, roughness: 0.9 });
   const snowMat = new THREE.MeshStandardMaterial({ color: 0xF8FAFC, roughness: 0.4 });
 
-  const mountainPeaks = [
-    { x: -28, y: 10, z: -42, r: 14, h: 16 },
-    { x: -16, y: 12, z: -45, r: 16, h: 19 },
-    { x: -4,  y: 9,  z: -40, r: 12, h: 14 },
-    { x: 9,   y: 13, z: -46, r: 17, h: 20 },
-    { x: 23,  y: 11, z: -43, r: 15, h: 17 },
-    { x: 36,  y: 8,  z: -41, r: 13, h: 13 },
+   const mountainPeaks = [
+    { x: -28, y: 6,  z: -26, r: 14, h: 18 },
+    { x: -16, y: 8,  z: -28, r: 16, h: 22 },
+    { x: -4,  y: 5,  z: -24, r: 12, h: 16 },
+    { x: 9,   y: 9,  z: -29, r: 17, h: 24 },
+    { x: 23,  y: 7,  z: -27, r: 15, h: 20 },
+    { x: 36,  y: 4,  z: -25, r: 13, h: 15 },
   ];
 
   mountainPeaks.forEach(mp => {

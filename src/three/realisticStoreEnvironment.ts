@@ -189,10 +189,10 @@ export function createRealisticStoreRoom(): THREE.Group {
     roughness: 0.35,
     metalness: 0.05,
   });
-  const floorGeom = new THREE.PlaneGeometry(16, 16);
+  const floorGeom = new THREE.PlaneGeometry(16, 10);
   const floor = new THREE.Mesh(floorGeom, floorMat);
   floor.rotation.x = -Math.PI / 2;
-  floor.position.set(0, 0, 0);
+  floor.position.set(0, 0, 1.5);
   floor.receiveShadow = true;
   room.add(floor);
 
