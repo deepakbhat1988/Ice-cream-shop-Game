@@ -428,6 +428,8 @@ export class GameScene {
     }
 
     const group = new THREE.Group();
+    // Make the whole prepared item smaller so it doesn't dominate the counter
+    group.scale.set(0.85, 0.85, 0.85);
 
     if (item.container === 'milkshake_glass' || item.isMilkshake) {
       const glassMat = new THREE.MeshPhysicalMaterial({
@@ -489,7 +491,8 @@ export class GameScene {
       let currentY = 0;
 
       if (item.container === 'waffle_cone') {
-        const coneGeom = new THREE.ConeGeometry(0.28, 0.72, 24, 1, true);
+        // SOLID closed cone (not open-ended) — always visible
+        const coneGeom = new THREE.ConeGeometry(0.28, 0.72, 24);
         const waffleMat = new THREE.MeshStandardMaterial({
           map: createWaffleTexture(),
           roughness: 0.45,
@@ -498,7 +501,8 @@ export class GameScene {
         cone.rotation.x = Math.PI;
         cone.position.y = 0.36;
         group.add(cone);
-        currentY = 0.72;
+        // Scoops start slightly below the cone rim so they visually merge with it
+        currentY = 0.60;
       } else {
         const cupGeom = new THREE.CylinderGeometry(0.3, 0.22, 0.34, 24);
         const cupMat = new THREE.MeshStandardMaterial({ color: 0x38BDF8, roughness: 0.3 });
