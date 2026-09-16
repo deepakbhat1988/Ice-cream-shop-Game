@@ -715,7 +715,7 @@ export class GameScene {
       const entry = this.humanCustomers.get(id);
       if (!entry) continue;
       preview.position.set(
-        entry.currentX,
+        entry.currentX - 0.8,
         2.05 + Math.sin(elapsedTime * 2) * 0.05,
         entry.currentZ
       );
