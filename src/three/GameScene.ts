@@ -80,12 +80,12 @@ export class GameScene {
     const height = container.clientHeight;
 
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0xE0F2FE);
-    this.scene.fog = new THREE.FogExp2(0xE0F2FE, 0.0015);
+    this.scene.background = new THREE.Color(0x1A1A1A);
+    this.scene.fog = new THREE.FogExp2(0x1A1A1A, 0.0015);
 
     this.camera = new THREE.PerspectiveCamera(46, width / height, 0.1, 120);
-    this.camera.position.set(0, 3.4, 6.0);
-    this.camera.lookAt(0, 1.05, 0.1);
+    this.camera.position.set(0, 2.2, 4.6);
+    this.camera.lookAt(0, 1.15, -0.5);
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
     this.renderer.setSize(width, height);
@@ -97,6 +97,7 @@ export class GameScene {
     container.appendChild(this.renderer.domElement);
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.controls.enabled = false;
     this.controls.enableDamping = true;
     this.controls.dampingFactor = 0.08;
     this.controls.target.set(0, 1.05, 0.1);

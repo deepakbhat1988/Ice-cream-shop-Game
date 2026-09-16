@@ -9,7 +9,6 @@ import { GameHUD } from './components/GameHUD';
 import { DaySummaryModal } from './components/DaySummaryModal';
 import { RecipeHelpModal } from './components/RecipeHelpModal';
 import { ServingFeedback } from './components/ServingFeedback';
-import { CameraControls } from './components/CameraControls';
 import confetti from 'canvas-confetti';
 import { Play, Sparkles } from 'lucide-react';
 
@@ -294,8 +293,6 @@ export default function App() {
         />
       )}
 
-      <CameraControls currentView={cameraView} onChangeView={handleCameraChange} />
-
       {/* Slim patience chip overlay — the actual order is shown in 3D above the customer */}
     
 
@@ -320,7 +317,7 @@ export default function App() {
 
             <div>
               <h1 className="text-2xl sm:text-3xl font-black text-gray-800 tracking-tight leading-tight">
-                Summer Ice Cream Cafe 3D
+                Sanvi's Ice Cream Cafe 3D
               </h1>
               <p className="text-xs sm:text-sm text-pink-600 font-semibold mt-1">
                 Serve delicious cones, sundaes, & banana shakes to eager cafe customers!

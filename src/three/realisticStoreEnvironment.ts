@@ -48,10 +48,10 @@ export function createCheckerboardFloorTexture(): THREE.CanvasTexture {
   for (let x = 0; x < 512; x += tileSize) {
     for (let y = 0; y < 512; y += tileSize) {
       const isAlt = ((x / tileSize) + (y / tileSize)) % 2 === 0;
-      ctx.fillStyle = isAlt ? '#FEF3C7' : '#B45309';
+      ctx.fillStyle = isAlt ? '#2D3436' : '#1A1A1A';
       ctx.fillRect(x, y, tileSize, tileSize);
 
-      ctx.strokeStyle = 'rgba(0, 0, 0, 0.12)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
       ctx.lineWidth = 2;
       ctx.strokeRect(x, y, tileSize, tileSize);
     }
@@ -197,8 +197,8 @@ export function createRealisticStoreRoom(): THREE.Group {
   room.add(floor);
 
   const wallMat = new THREE.MeshStandardMaterial({
-    color: 0xFFFBEB,
-    roughness: 0.8,
+    color: 0x2D3436,
+    roughness: 0.75,
   });
 
   [-6.2, 6.2].forEach(wx => {
@@ -210,7 +210,7 @@ export function createRealisticStoreRoom(): THREE.Group {
 
     const wainscot = new THREE.Mesh(
       new THREE.BoxGeometry(3.6, 1.8, 0.44),
-      new THREE.MeshStandardMaterial({ color: 0x99F6E4, roughness: 0.5 })
+      new THREE.MeshStandardMaterial({ color: 0x1A1A1A, roughness: 0.6 })
     );
     wainscot.position.set(wx, 0.9, -4.18);
     room.add(wainscot);
@@ -286,14 +286,14 @@ export function createRealisticStoreRoom(): THREE.Group {
     room.add(glass);
   });
 
-  const beamMat = new THREE.MeshStandardMaterial({ color: 0x92400E, roughness: 0.5 });
+  const beamMat = new THREE.MeshStandardMaterial({ color: 0x3D2914, roughness: 0.55 });
   for (let b = -4; b <= 4; b += 2.5) {
     const beam = new THREE.Mesh(new THREE.BoxGeometry(16, 0.3, 0.25), beamMat);
     beam.position.set(0, 5.85, b);
     room.add(beam);
   }
 
-  const brassMat = new THREE.MeshStandardMaterial({ color: 0xF59E0B, metalness: 0.85, roughness: 0.2 });
+  const brassMat = new THREE.MeshStandardMaterial({ color: 0xD4AF37, metalness: 0.7, roughness: 0.25 });
   [-2.2, 2.2].forEach(lx => {
     const lampGroup = new THREE.Group();
     lampGroup.position.set(lx, 4.4, 0.2);
@@ -339,8 +339,8 @@ export function createRealisticServiceCounter(): THREE.Group {
   // Counter Base Body
   const baseGeom = new THREE.BoxGeometry(width, height, depth);
   const baseMat = new THREE.MeshStandardMaterial({
-    color: 0xCCFBF1,
-    roughness: 0.4,
+    color: 0x1A1A1A,
+    roughness: 0.5,
   });
   const base = new THREE.Mesh(baseGeom, baseMat);
   base.position.set(0, height / 2, 0);
@@ -355,7 +355,7 @@ export function createRealisticServiceCounter(): THREE.Group {
     const px = -width / 2 + 0.5 + p * panelW + panelW / 2;
     const panel = new THREE.Mesh(
       new THREE.BoxGeometry(panelW * 0.86, height * 0.72, 0.05),
-      new THREE.MeshStandardMaterial({ color: p % 2 === 0 ? 0xFCE7F3 : 0xFFFBEB, roughness: 0.3 })
+      new THREE.MeshStandardMaterial({ color: p % 2 === 0 ? 0x3D2914 : 0x1A1A1A, roughness: 0.5 })
     );
     panel.position.set(px, height / 2, depth / 2 + 0.025);
     counterGroup.add(panel);
