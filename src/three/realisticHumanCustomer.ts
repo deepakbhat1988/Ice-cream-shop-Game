@@ -1236,7 +1236,7 @@ export function createRealisticHumanCustomer(appearance: CustomerAppearance): Re
   const headGroup = new THREE.Group();
   headGroup.position.set(0, 1.90 * heightFactor, 0);
 
-  const headGeom = new THREE.SphereGeometry(0.235, 36, 32);
+  const headGeom = new THREE.SphereGeometry(0.220, 36, 32);
   headGeom.scale(0.95 * cheekFullness, 1.12, 1.05);
   const headMesh = new THREE.Mesh(headGeom, faceMat);
   headMesh.castShadow = true;
@@ -1276,7 +1276,7 @@ export function createRealisticHumanCustomer(appearance: CustomerAppearance): Re
   });
 
   const noseGroup = new THREE.Group();
-  noseGroup.position.set(0, -0.02, 0.205);
+  noseGroup.position.set(0, -0.02, 0.235);
 
   const bridgeGeom = new THREE.CylinderGeometry(0.015, 0.021, 0.088, 14);
   const noseBridge = new THREE.Mesh(bridgeGeom, skinMat);
@@ -1298,7 +1298,7 @@ export function createRealisticHumanCustomer(appearance: CustomerAppearance): Re
   });
   headGroup.add(noseGroup);
   const mouthGroup = new THREE.Group();
-  mouthGroup.position.set(0, -0.108, 0.198);
+  mouthGroup.position.set(0, -0.108, 0.228);
 
   const lipColor = skinColor.clone().offsetHSL(0, 0.22, -0.06);
   const lipMat = new THREE.MeshStandardMaterial({
@@ -1343,7 +1343,7 @@ export function createRealisticHumanCustomer(appearance: CustomerAppearance): Re
   const createRealisticEye = (isLeft: boolean): { eyeAssembly: THREE.Group; eyelid: THREE.Mesh } => {
     const eyeAssembly = new THREE.Group();
     const side = isLeft ? -1 : 1;
-    eyeAssembly.position.set(side * 0.084, 0.034, 0.182);
+    eyeAssembly.position.set(side * 0.084, 0.034, 0.215);
     eyeAssembly.rotation.y = side * 0.10;
 
     const eyeball = new THREE.Mesh(new THREE.SphereGeometry(0.036, 22, 20), scleraMat);
