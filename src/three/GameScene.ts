@@ -716,7 +716,7 @@ export class GameScene {
       if (!entry) continue;
       preview.position.set(
         entry.currentX,
-        2.55 + Math.sin(elapsedTime * 2) * 0.05,
+        2.05 + Math.sin(elapsedTime * 2) * 0.05,
         entry.currentZ
       );
       preview.lookAt(this.camera.position.x, preview.position.y, this.camera.position.z);

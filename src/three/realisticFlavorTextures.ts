@@ -375,10 +375,7 @@ export function createRealisticScoopMesh(flavorId: FlavorId): THREE.Group {
 
   // For strawberry: add a tiny real 3D strawberry slice garnish!
   if (flavorId === 'strawberry') {
-    const strawberryBerry = createMiniStrawberryGarnish();
-    strawberryBerry.position.set(0.22, 0.32, 0.18);
-    strawberryBerry.rotation.set(0.2, 0.4, 0.3);
-    group.add(strawberryBerry);
+   
   }
 
   return group;

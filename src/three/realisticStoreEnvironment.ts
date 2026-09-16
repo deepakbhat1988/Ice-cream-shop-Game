@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { FlavorId, ToppingId } from '../types/game';
 import { FLAVORS } from '../game/orderManager';
-import { getRealisticFlavorTexture, createMiniStrawberryGarnish } from './realisticFlavorTextures';
+import { getRealisticFlavorTexture } from './realisticFlavorTextures';
 
 // 1. Wood Floor / Counter Texture Generator
 export function createPolishedWoodTexture(): THREE.CanvasTexture {
@@ -437,10 +437,7 @@ export function createRealisticFlavorWells(): THREE.Group {
     }
 
     if (item.id === 'strawberry') {
-      const berryGarnish = createMiniStrawberryGarnish();
-      berryGarnish.position.set(-0.06, 0.17, -0.06);
-      berryGarnish.rotation.set(0.3, 0.2, 0.4);
-      tubGroup.add(berryGarnish);
+     
     }
 
     const scoopGroup = new THREE.Group();
